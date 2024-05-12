@@ -11,6 +11,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  adminUserToken
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -33,7 +34,7 @@ describe("POST /companies", function () {
     const resp = await request(app)
         .post("/companies")
         .send(newCompany)
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(201);
     expect(resp.body).toEqual({
       company: newCompany,
@@ -47,7 +48,7 @@ describe("POST /companies", function () {
           handle: "new",
           numEmployees: 10,
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -58,7 +59,7 @@ describe("POST /companies", function () {
           ...newCompany,
           logoUrl: "not-a-url",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 });
@@ -94,6 +95,108 @@ describe("GET /companies", function () {
             },
           ],
     });
+  });
+
+  test("ok for filtering name", async function () {
+
+    const query = {
+      name: "c2"
+    };
+  
+
+    const resp = await request(app).get("/companies").query(query);
+    expect(resp.body).toEqual({
+      companies:
+          [           
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            },
+          ],
+    });
+  });
+
+  test("ok for max employees 2", async function () {
+
+    const query = {
+      minEmployees: 1,
+      maxEmployees: 4
+    };
+  
+    const resp = await request(app).get("/companies").query(query);
+    expect(resp.body).toEqual({
+      companies:
+          [           
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            },
+            {
+              handle: "c3",
+              name: "C3",
+              description: "Desc3",
+              numEmployees: 3,
+              logoUrl: "http://c3.img",
+            },
+          ],
+    });
+  });
+
+  test("Validate minEmployees is not greater than maxEmployees", async function () {
+    // Set minEmployees greater than maxEmployees
+    const query = {
+      minEmployees: "10",
+      maxEmployees: "5"
+    };
+  
+    const resp = await request(app)
+      .get("/companies")
+      .query(query);
+  
+    // Check if the response status is 400
+    expect(resp.status).toBe(400);
+  
+    // Check if the response body contains the correct error message
+    expect(resp.body).toEqual("minEmployees cannot be greater than maxEmployees");
+  });
+
+  test("Validate when minEmployees is null and maxEmployees is null", async function () {
+    const resp = await request(app).get("/companies");
+  
+    // Check if the response status is 200
+    expect(resp.status).toBe(200);
+  });
+  
+  test("Validate when minEmployees is null and maxEmployees is provided", async function () {
+    const query = {
+      maxEmployees: "10"
+    };
+  
+    const resp = await request(app)
+      .get("/companies")
+      .query(query);
+  
+    // Check if the response status is 200
+    expect(resp.status).toBe(200);
+  });
+  
+  test("Validate when minEmployees is provided and maxEmployees is null", async function () {
+    const query = {
+      minEmployees: "5"
+    };
+  
+    const resp = await request(app)
+      .get("/companies")
+      .query(query);
+  
+    // Check if the response status is 200
+    expect(resp.status).toBe(200);
   });
 
   test("fails: test next() handler", async function () {
@@ -152,7 +255,7 @@ describe("PATCH /companies/:handle", function () {
         .send({
           name: "C1-new",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.body).toEqual({
       company: {
         handle: "c1",
@@ -179,7 +282,7 @@ describe("PATCH /companies/:handle", function () {
         .send({
           name: "new nope",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 
@@ -189,7 +292,7 @@ describe("PATCH /companies/:handle", function () {
         .send({
           handle: "c1-new",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -199,7 +302,7 @@ describe("PATCH /companies/:handle", function () {
         .send({
           logoUrl: "not-a-url",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 });
@@ -210,7 +313,7 @@ describe("DELETE /companies/:handle", function () {
   test("works for users", async function () {
     const resp = await request(app)
         .delete(`/companies/c1`)
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.body).toEqual({ deleted: "c1" });
   });
 
@@ -223,7 +326,7 @@ describe("DELETE /companies/:handle", function () {
   test("not found for no such company", async function () {
     const resp = await request(app)
         .delete(`/companies/nope`)
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminUserToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 });

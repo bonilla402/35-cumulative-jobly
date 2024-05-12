@@ -59,6 +59,7 @@ describe("create", function () {
 /************************************** findAll */
 
 describe("findAll", function () {
+
   test("works: no filter", async function () {
     let companies = await Company.findAll();
     expect(companies).toEqual([
@@ -85,6 +86,55 @@ describe("findAll", function () {
       },
     ]);
   });
+
+  test("works: name only", async function () {
+    let companies = await Company.findAll('c2');
+
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },   
+    ]);
+  });
+
+
+  test("works: more than 1 employees", async function () {
+    let companies = await Company.findAll(null,1);
+    expect(companies).toEqual([  
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+
+  test("works: more than 1 employees, less than 3", async function () {
+    let companies = await Company.findAll(null,1,3);
+    expect(companies).toEqual([  
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+    ]);
+  });
+
 });
 
 /************************************** get */

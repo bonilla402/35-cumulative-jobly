@@ -42,8 +42,41 @@ function ensureLoggedIn(req, res, next) {
   }
 }
 
+/** Require admin user or raise 401 */
+function ensureAdmin(req, res, next) {
+  try {
+    if (!res.locals.user || !res.locals.user.isAdmin) {
+      throw new UnauthorizedError();
+    }
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/** Require admin user or raise 401 */
+function ensureAdminOrSelf(req, res, next) {
+  try {
+
+    // Check if user is logged in
+    if (!res.locals.user) {
+      throw new UnauthorizedError("User is not logged in");
+    }
+    
+    // Check if user is admin or is the same user specified in the username parameter
+    if (!(res.locals.user.isAdmin || res.locals.user.username === req.params.username)) {
+      throw new UnauthorizedError("User is not authorized to perform this action");
+    }
+
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+}
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin,
+  ensureAdminOrSelf
 };
