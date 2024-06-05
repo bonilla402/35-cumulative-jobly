@@ -44,6 +44,7 @@ class Job {
  * @returns {[{ id, title, salary, equity, companyHandle, companyName }, ...]} An array of objects representing the companies that match the provided filters.
  */
 static async findAll(minSalary, hasEquity, title) {
+
   let values = [];
   let filters = [];
 
@@ -86,6 +87,8 @@ static async findAll(minSalary, hasEquity, title) {
             LEFT JOIN companies AS c ON c.handle = j.company_handle
      ${concatenatedFilters}
      ORDER BY c.name, j.title`, values); // Use the concatenatedFilters in the query and pass values as parameters
+
+     console.log(res.rows);
 
   return res.rows; // Return the result of the query
 }
@@ -158,7 +161,7 @@ static async findAll(minSalary, hasEquity, title) {
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
 
-    if (!job) throw new NotFoundError(`No job: ${id}`);
+    if (!job) throw new NotFoundError(`kjkNo job: ${id}`);
 
     return job;
   }
