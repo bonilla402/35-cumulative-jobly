@@ -122,4 +122,42 @@ router.delete("/:username", ensureAdminOrSelf, async function (req, res, next) {
 });
 
 
+/**
+ * POST /:username/jobs/:id
+ *
+ * Apply a user to a specific job.
+ *
+ * This route allows a user to apply to a job by inserting a record into the applications table.
+ * The user must be either the correct user (as per the username in the URL) or an admin to access this route.
+ *
+ * Route parameters:
+ * @param {string} username - The username of the user applying for the job.
+ * @param {number} id - The ID of the job to which the user is applying.
+ *
+ * Middleware:
+ * - ensureCorrectUserOrAdmin: Verifies that the user is either the correct user or an admin.
+ *
+ * Request body: None
+ *
+ * Response:
+ * - Status: 200 OK
+ * - Body: { applied: jobId }
+ *
+ * @throws {NotFoundError} If the job with the specified ID does not exist.
+ * @throws {NotFoundError} If the user with the specified username does not exist.
+ * @throws {Error} For any other errors that might occur during the application process.
+ *
+ * @returns {Promise<void>} A promise that resolves when the response is sent.
+ */
+router.post("/:username/jobs/:id", ensureAdminOrSelf, async function (req, res, next) {
+  try {
+    const jobId = +req.params.id;
+    await User.applyToJob(req.params.username, jobId);
+    return res.json({ applied: jobId });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
 module.exports = router;

@@ -204,6 +204,47 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
+
+/**
+ * Apply a user to a job by inserting a record into the applications table.
+ *
+ * This method performs the following steps:
+ * 1. Verifies that the job with the specified ID exists.
+ * 2. Verifies that the user with the specified username exists.
+ * 3. Inserts a new record into the applications table with the job ID and username.
+ *
+ * @param {string} username - The username of the user applying for the job.
+ * @param {number} jobId - The ID of the job to which the user is applying.
+ *
+ * @throws {NotFoundError} If the job with the specified ID does not exist.
+ * @throws {NotFoundError} If the user with the specified username does not exist.
+ *
+ * @returns {Promise<void>} A promise that resolves when the application is successfully inserted.
+ */
+  static async applyToJob(username, jobId) {
+    const jobSearch = await db.query(
+          `SELECT id
+           FROM jobs
+           WHERE id = $1`, [jobId]);
+    const job = jobSearch.rows[0];
+
+    if (!job) throw new NotFoundError(`Job with id: ${jobId} not found`);
+
+    const userSearch = await db.query(
+          `SELECT username
+           FROM users
+           WHERE username = $1`, [username]);
+    const user = userSearch.rows[0];
+
+    if (!user) throw new NotFoundError(`No username with id: ${username}`);
+
+    await db.query(
+          `INSERT INTO applications (job_id, username)
+           VALUES ($1, $2)`,
+        [jobId, username]);
+  }
+
+
 }
 
 
