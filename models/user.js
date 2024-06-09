@@ -139,6 +139,23 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
+    const userApplicationsRes = await db.query(
+      `SELECT job_id
+        FROM applications
+        WHERE applications.username = $1`, [username]);
+
+    // Initializing an empty array to hold the job_id values
+    const jobs = [];
+
+    // Using a for loop to iterate through each row and extract the job_id
+    for (let i = 0; i < userApplicationsRes.rows.length; i++) {
+      jobs.push(userApplicationsRes.rows[i].job_id);
+    }
+
+    console.log(jobs);
+
+    user.jobs = jobs;
+
     return user;
   }
 

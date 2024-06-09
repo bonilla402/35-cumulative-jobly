@@ -179,6 +179,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [testJobIds[1]]
       },
     });
   });
@@ -194,6 +195,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [testJobIds[1]]
       },
     });
   });
@@ -340,16 +342,16 @@ describe("DELETE /users/:username", function () {
 describe("POST /users/:username/jobs/:id", function () {
   test("works for admin", async function () {
     const resp = await request(app)
-        .post(`/users/u1/jobs/${testJobIds[1]}`)
+        .post(`/users/u1/jobs/${testJobIds[0]}`)
         .set("authorization", `Bearer ${adminUserToken}`);
-    expect(resp.body).toEqual({ applied: testJobIds[1] });
+    expect(resp.body).toEqual({ applied: testJobIds[0] });
   });
 
   test("works for same user", async function () {
     const resp = await request(app)
-        .post(`/users/u1/jobs/${testJobIds[1]}`)
+        .post(`/users/u1/jobs/${testJobIds[0]}`)
         .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({ applied: testJobIds[1] });
+    expect(resp.body).toEqual({ applied: testJobIds[0] });
   });
 
   test("unauth for others", async function () {
